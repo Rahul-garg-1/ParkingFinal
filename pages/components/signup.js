@@ -3,9 +3,9 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { useEffect } from "react";
 import sha256 from "sha256";
-// import web3 from "../ethereum/web3";
-// import GoogleMap from "./GoogleMap";
-// import Parking from "../ethereum/Parking.js";
+import web3 from "../../ethereum/web3";
+import GoogleMap from "../GoogleMap";
+import Parking from "../../ethereum/Parking.js";
 import axios from "axios";
 import { withRouter } from "next/router";
 // import styles from "./css/login.module.css";
@@ -46,18 +46,18 @@ const SignUp = ()=>{
     });
   });
 
-  handleAutoCompleteChange = (address) => {
-    // setUserInfo((prevState)=>({
-    //   ...prevState,
-    //   locAddress: address
-    // }))
-  };
-
-  handleSelect = (address) => {
+  const handleAutoCompleteChange = (address) => {
     setUserInfo((prevState)=>({
       ...prevState,
       locAddress: address
-    }))
+    }));
+  };
+
+  const handleSelect = (address) => {
+    setUserInfo((prevState)=>({
+      ...prevState,
+      locAddress: address
+    }));
     geocodeByAddress(address)
       .then((results) => getLatLng(results[0]))
       .then((latLng) => {
@@ -65,110 +65,111 @@ const SignUp = ()=>{
           lat: latLng.lat.toString(),
           lon: latLng.lng.toString(),
         });
-        console.log(this.state);
+        // console.log(this.state);
       })
       .catch((error) => console.error("Error", error));
   };
 
 
-  handleChange = (event) => {
-    // this.setState({ [event.target.name]: event.target.value });
+  const handleChange = (event) => {
+    setUserInfo((prevState)=>({
+        ...prevState,
+        [event.target.name]: event.target.value
+      }));
   };
-  handleSubmit = ()=>{};
 
-//   handleSubmit = async (e) => {
-//     e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-//     //intial fetch
-//     this.state.locations = [];
+    //intial fetch
+    this.state.locations = [];
 
-//     var len = await Parking.methods.getParkingSpotsCount().call({
-//       gas: 10000000,
-//     });
+    var len = await Parking.methods.getParkingSpotsCount().call({
+      gas: 10000000,
+    });
 
-//     for (var i = 0; i < len; i++) {
-//       var loc = await Parking.methods.getLocations(i).call({
-//         gas: 10000000,
-//       });
-//       this.state.locations.push(loc);
-//     }
+    for (var i = 0; i < len; i++) {
+      var loc = await Parking.methods.getLocations(i).call({
+        gas: 10000000,
+      });
+      this.state.locations.push(loc);
+    }
 
-//     // const account = await web3.eth.getAccounts();
-// const account = "bjk";
-//     console.log(account[0]);
-//     if (params.person === "User") {
-//       const tem = await Parking.methods.checkAlreadyRegisteredUser().call({
-//         from: account[0],
-//       });
-//       if (tem) {
-//         alert("User already registered!!");
-//         window.location.href = "/login?person=User";
-//         return;
-//       }
-//       this.state.lat = lati;
-//       this.state.lon = longi;
-//       console.log(this.state);
-//       console.log(this.state.locations);
-//       await Parking.methods
-//         .registerNewUser(
-//           this.state.carNo,
-//           this.state.mobileNumber,
-//           this.state.lat,
-//           this.state.lon,
-//           this.state.password
-//         )
-//         .send({
-//           from: account[0],
-//           gas: 10000000,
-//         });
-//       alert("Registered Successfully");
-//       window.location.href = "/userWindow";
-//     } else if (params.person === "spotOwner") {
-//       const already_registered = await Parking.methods
-//         .checkAlreadyRegisteredParkingSpot()
-//         .call({
-//           from: account[0],
-//         });
-//       if (already_registered) {
-//         alert("A parking spot is already registered with your account!!");
-//         window.location.href = "/";
-//         return;
-//       }
-//       const hash = sha256(account[0] + this.state.password);
-//       console.log(hash);
-//       await Parking.methods
-//         .registerNewParkingSpot(
-//           this.state.rate,
-//           this.state.lat,
-//           this.state.lon,
-//           this.state.locAddress,
-//           this.state.availableSpots,
-//           hash,
-//           this.state.password
-//         )
-//         .send({
-//           from: account[0],
-//           gas: 10000000,
-//         });
+    const account = await web3.eth.getAccounts();
+    console.log(account[0]);
+    if (params.person === "User") {
+      const tem = await Parking.methods.checkAlreadyRegisteredUser().call({
+        from: account[0],
+      });
+      if (tem) {
+        alert("User already registered!!");
+        window.location.href = "/login?person=User";
+        return;
+      }
+      this.state.lat = lati;
+      this.state.lon = longi;
+      console.log(this.state);
+      console.log(this.state.locations);
+      await Parking.methods
+        .registerNewUser(
+          this.state.carNo,
+          this.state.mobileNumber,
+          this.state.lat,
+          this.state.lon,
+          this.state.password
+        )
+        .send({
+          from: account[0],
+          gas: 10000000,
+        });
+      alert("Registered Successfully");
+      window.location.href = "/userWindow";
+    } else if (params.person === "spotOwner") {
+      const already_registered = await Parking.methods
+        .checkAlreadyRegisteredParkingSpot()
+        .call({
+          from: account[0],
+        });
+      if (already_registered) {
+        alert("A parking spot is already registered with your account!!");
+        window.location.href = "/";
+        return;
+      }
+      const hash = sha256(account[0] + this.state.password);
+      console.log(hash);
+      await Parking.methods
+        .registerNewParkingSpot(
+          this.state.rate,
+          this.state.lat,
+          this.state.lon,
+          this.state.locAddress,
+          this.state.availableSpots,
+          hash,
+          this.state.password
+        )
+        .send({
+          from: account[0],
+          gas: 10000000,
+        });
 
-//       //final fetch
-//       var len = await Parking.methods.getParkingSpotsCount().call({
-//         gas: 10000000,
-//       });
+      //final fetch
+      var len = await Parking.methods.getParkingSpotsCount().call({
+        gas: 10000000,
+      });
 
-//       var loc = await Parking.methods.getLocations(len - 1).call({
-//         gas: 10000000,
-//       });
-//       this.state.locations.push(loc);
-//       console.log(this.state.locations);
-//       alert("Registered Spot Successfully");
-//       window.location.href = "/";
-//     }
-//   };
+      var loc = await Parking.methods.getLocations(len - 1).call({
+        gas: 10000000,
+      });
+      this.state.locations.push(loc);
+      console.log(this.state.locations);
+      alert("Registered Spot Successfully");
+      window.location.href = "/";
+    }
+  };
     return (
       <div className={styles.outer}>
         {params.person === "spotOwner" ? (
-          <form className={styles.form} onSubmit={this.handleSubmit}>
+          <form className={styles.form} onSubmit={handleSubmit}>
             <h2>Sign Up</h2>
             <div className={styles.input}>
               <div className={styles.inputBox}>
@@ -176,7 +177,7 @@ const SignUp = ()=>{
                 <input
                   type="text"
                   name="userAddress"
-                  onChange={this.handleChange}
+                  onChange={handleChange}
                 ></input>
               </div>
               <div className={styles.inputBox}>
@@ -184,13 +185,13 @@ const SignUp = ()=>{
                 <input
                   type="number"
                   name="rate"
-                  onChange={this.handleChange}
+                  onChange={handleChange}
                 ></input>
               </div>
               <PlacesAutocomplete
-                value={this.state.address}
-                onChange={this.handleAutoCompleteChange}
-                onSelect={this.handleSelect}
+                value="jbkj{state.address}"
+                onChange={handleAutoCompleteChange}
+                onSelect={handleSelect}
               >
                 {({
                   getInputProps,
@@ -203,7 +204,7 @@ const SignUp = ()=>{
                     <input
                       type="text"
                       name="locAddress"
-                      onChange={this.handleChange}
+                      onChange={handleChange}
                       {...getInputProps({
                         name: "locAddress",
                       })}
@@ -245,7 +246,7 @@ const SignUp = ()=>{
                 <input
                   type="number"
                   name="availableSpots"
-                  onChange={this.handleChange}
+                  onChange={handleChange}
                 ></input>
               </div>
               <div className={styles.inputBox}>
@@ -253,7 +254,7 @@ const SignUp = ()=>{
                 <input
                   type="password"
                   name="password"
-                  onChange={this.handleChange}
+                  onChange={handleChange}
                 ></input>
               </div>
               <div className={styles.inputBox}>
@@ -261,13 +262,13 @@ const SignUp = ()=>{
                   type="submit"
                   name="submit"
                   value="Sign Up"
-                  onChange={this.handleChange}
+                  onChange={handleChange}
                 ></input>
               </div>
             </div>
           </form>
         ) : (
-          <form className={styles.form} onSubmit={this.handleSubmit}>
+          <form className={styles.form} onSubmit={handleSubmit}>
             <h2>Sign Up</h2>
             <div className={styles.input}>
               <div className={styles.inputBox}>
@@ -275,7 +276,7 @@ const SignUp = ()=>{
                 <input
                   type="text"
                   name="userAddress"
-                  onChange={this.handleChange}
+                  onChange={handleChange}
                 ></input>
               </div>
 
@@ -284,7 +285,7 @@ const SignUp = ()=>{
                 <input
                   type="text"
                   name="carNo"
-                  onChange={this.handleChange}
+                  onChange={handleChange}
                 ></input>
               </div>
               <div className={styles.inputBox}>
@@ -292,7 +293,7 @@ const SignUp = ()=>{
                 <input
                   type="text"
                   name="mobileNumber"
-                  onChange={this.handleChange}
+                  onChange={handleChange}
                 ></input>
               </div>
               <div className={styles.inputBox}>
@@ -300,7 +301,7 @@ const SignUp = ()=>{
                 <input
                   type="password"
                   name="password"
-                  onChange={this.handleChange}
+                  onChange={handleChange}
                 ></input>
               </div>
 
@@ -309,7 +310,7 @@ const SignUp = ()=>{
                   type="submit"
                   name="submit"
                   value="Sign Up"
-                  onChange={this.handleChange}
+                  onChange={handleChange}
                 ></input>
               </div>
             </div>

@@ -2,9 +2,9 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router";
-// import web3 from "...ethereum/web3.js"
-// import GoogleMap from "../GoogleMap";
-// import Parking from ".../ethereum/Parking.js";
+import web3 from "../../ethereum/web3";
+import GoogleMap from "../GoogleMap";
+import Parking from "../../ethereum/Parking.js";
 import axios from "axios";
 import { withRouter } from "next/router";
 import styles from "./login.module.css"
@@ -38,8 +38,7 @@ const Login = ()=> {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // const account = await web3.eth.getAccounts();
-    const account = "guyr";
+    const account = await web3.eth.getAccounts();
     console.log(account[0]);
     if (params.person === "User"){
       
@@ -112,9 +111,6 @@ const Login = ()=> {
           <p className={styles.forgot}>
             Don't have an account <Link to={`/signup/${params.person}`}>Sign Up</Link>
           </p>
-          {/* <p className={styles.inputBox}>
-              {this.props.router.query.person}
-          </p> */}
         </form>
       </div>
     );

@@ -6,7 +6,7 @@
   align-items: center;
   min-height: 100vh;
   content: '';
-  position: absolute;
+  /* position: absolute; */
   width: 100%;
   height: auto;
   top: 0;
