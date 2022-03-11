@@ -7,7 +7,8 @@ import GoogleMap from "../GoogleMap";
 import Parking from "../../ethereum/Parking.js";
 import axios from "axios";
 import { withRouter } from "next/router";
-import styles from "./login.module.css"
+import styles from "./login.module.css";
+import { useNavigate } from "react-router";
 import { Map, GoogleApiWrapper, InfoWindow, Marker } from "google-maps-react";
 import PlacesAutocomplete, {
   geocodeByAddress,
@@ -16,19 +17,17 @@ import PlacesAutocomplete, {
 
 var uid = 1;
 
-const Login = ()=> {
+const Login = () => {
+  const navigate = useNavigate();
 
   const [userAddress, setUserAddress] = useState("");
-  const[password, setPassword] = useState("");
+  const [password, setPassword] = useState("");
   const params = useParams();
-  console.log("hello");
-  console.log(params.person);
   const handleChange = (event) => {
-    if(event.target.name === "userAddress"){
+    if (event.target.name === "userAddress") {
       setUserAddress(event.target.value);
       console.log(userAddress);
-    }
-    else if(event.target.name === "password"){
+    } else if (event.target.name === "password") {
       setPassword(event.target.value);
       console.log(password);
     }
@@ -38,83 +37,85 @@ const Login = ()=> {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const account = await web3.eth.getAccounts();
     console.log(account[0]);
-    if (params.person === "User"){
-      
-      const registered = await Parking.methods.checkAlreadyRegisteredUser().call({
-        from : account[0]
-      });
+    if (params.person === "user") {
+      const registered = await Parking.methods
+        .checkAlreadyRegisteredUser()
+        .call({
+          from: account[0],
+        });
 
-      if(!registered){
-        alert("User not registered!!")
-        window.location.href = "/signUp?person=User";
-        return
+      if (!registered) {
+        alert("User not registered!!");
+        navigate(`/signup/${params.person}`);
+        return;
       }
 
       const passcode = await Parking.methods.getUserCred().call({
-        from : account[0],
+        from: account[0],
       });
 
-      if(passcode.localeCompare(password)!=0){
-        alert("Incorrect credentials! try again")
-        return
-      }else{
-        window.location.href = "/userWindow";
-        return
+      if (passcode.localeCompare(password) != 0) {
+        alert("Incorrect credentials! try again");
+        return;
+      } else {
+        navigate("/userWindow");
+        return;
       }
+    } else if (params.person === "spotOwner") {
+      const registered = await Parking.methods
+        .checkAlreadyRegisteredParkingSpot()
+        .call({
+          from: account[0],
+        });
 
-    } else if(params.person === "spotOwner"){
-      
-      const registered = await Parking.methods.checkAlreadyRegisteredParkingSpot().call({
-        from : account[0]
-      });
-
-      if(!registered){
-        alert("The spot is not registered!!")
-        window.location.href = "/signUp?person=spotOwner";
-        return
+      if (!registered) {
+        alert("The spot is not registered!!");
+        navigate(`/signup/${params.person}`);
+        return;
       }
 
       const passcode = await Parking.methods.getSpotOwnerCred().call({
-        from : account[0],
+        from: account[0],
       });
 
-      if(passcode.localeCompare(password)!=0){
-        alert("Incorrect credentials! try again")
-        return
-      }else{
-        alert("Success")
-        window.location.href = "/";
-        return
+      if (passcode.localeCompare(password) != 0) {
+        alert("Incorrect credentials! try again");
+        return;
+      } else {
+        alert("Success");
+        navigate("/ownerDetails");
+        return;
       }
     }
   };
 
-    return (
-      <div className={styles.outer}>
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <h2>Login</h2>
-          <div className={styles.input}>
-            <div className={styles.inputBox}>
-              <label>Username</label>
-              <input name="userAddress" type="text" onChange={handleChange} />
-            </div>
-            <div className={styles.inputBox}>
-              <label>Password</label>
-              <input name="password" type="password" onChange={handleChange} />
-            </div>
-            <div className={styles.inputBox}>
-              <input type="submit" name="" value="Sign In" />
-            </div>
+  return (
+    <div className={styles.outer}>
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <h2>Login</h2>
+        <div className={styles.input}>
+          <div className={styles.inputBox}>
+            <label>Username</label>
+            <input name="userAddress" type="text" onChange={handleChange} />
           </div>
-          <p className={styles.forgot}>
-            Don't have an account <Link to={`/signup/${params.person}`}>Sign Up</Link>
-          </p>
-        </form>
-      </div>
-    );
-  
-}
+          <div className={styles.inputBox}>
+            <label>Password</label>
+            <input name="password" type="password" onChange={handleChange} />
+          </div>
+          <div className={styles.inputBox}>
+            <input type="submit" name="" value="Sign In" />
+          </div>
+        </div>
+        <p className={styles.forgot}>
+          Don't have an account{" "}
+          <Link to={`/signup/${params.person}`}>Sign Up</Link>
+        </p>
+      </form>
+    </div>
+  );
+};
 
 export default Login;
