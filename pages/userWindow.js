@@ -1,10 +1,18 @@
 import React, { Component } from "react";
-import Link from "next/link";
-import styles from "./css/userWindow.module.css";
+import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import styles from "./css/login.module.css";
+import { useNavigate } from "react-router";
 import { Map, GoogleApiWrapper, InfoWindow, Marker } from "google-maps-react";
+import PlacesAutocomplete, {
+  geocodeByAddress,
+  getLatLng,
+} from "react-places-autocomplete";
 
-class UserWindow extends Component {
-  state = {
+const userWindow = (props) => {
+  const navigate = useNavigate();
+
+  const [userInfo, setUserInfo] = useState({
     latitude: 0,
     longitude: 0,
     address: "",
@@ -12,21 +20,18 @@ class UserWindow extends Component {
     showingInfoWindow: false, // Hides or shows the InfoWindow
     activeMarker: {}, // Shows the active marker upon click
     selectedPlace: {},
-  };
+  });
 
-  constructor(props) {
-    super(props);
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     navigator.geolocation.getCurrentPosition((position) => {
       fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&censor=false&key=AIzaSyA50KK3_YkxIwvDfiU58RXo6lVksvQprD8`
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&censor=false&key=AIzaSyCRuuxo5Ay2Prx0W6SlQJ9eOKs9hRHeqm0`
       )
         .then((response) => response.json())
         .then((data) => {
           // console.log(this);
-          this.setState({
+          setUserInfo({
+            ...userInfo,
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
             address: data.results[0].formatted_address,
@@ -36,70 +41,70 @@ class UserWindow extends Component {
         .catch((error) => alert(error));
       // console.log(this.state);
     });
-  }
-  onMarkerClick = (props, marker, e) =>
-    this.setState({
+  });
+
+  const onMarkerClick = (props, marker, e) => {
+    // console.log(props);
+    // console.log(marker);
+    // console.log(e);
+    setUserInfo({
+      ...userInfo,
       selectedPlace: props,
       activeMarker: marker,
       showingInfoWindow: true,
     });
+  };
 
-  onClose = (props) => {
+  const onClose = (props) => {
     if (this.state.showingInfoWindow) {
-      this.setState({
+      setUserInfo({
+        ...userInfo,
         showingInfoWindow: false,
         activeMarker: null,
       });
     }
   };
 
-  render() {
-    return (
-      <div>
-        {this.state.isLoading ? (
-          <div class={styles.loader}></div>
-        ) : (
-          <div className={styles.userLocPage}>
-            <div>
-              <div className={styles.header}>User's Current Location </div>
-              <Map
-                google={this.props.google}
-                zoom={14}
-                style={{ width: "100%", height: "100%" }}
-                initialCenter={{
-                  lat: this.state.latitude,
-                  lng: this.state.longitude,
-                }}
+  return (
+    <div>
+      {userInfo.isLoading ? (
+        <div class={styles.loader}></div>
+      ) : (
+        <div className={styles.userLocPage}>
+          <div>
+            <div className={styles.header}>User's Current Location </div>
+            <Map
+              google={props.google}
+              zoom={14}
+              style={{ width: "100%", height: "100%" }}
+              initialCenter={{
+                lat: userInfo.latitude,
+                lng: userInfo.longitude,
+              }}
+            >
+              <Marker onClick={onMarkerClick} name={"Current Location"} />
+              <InfoWindow
+                marker={userInfo.activeMarker}
+                visible={userInfo.showingInfoWindow}
+                onClose={onClose}
               >
-                <Marker
-                  onClick={this.onMarkerClick}
-                  name={"Current Location"}
-                />
-                <InfoWindow
-                  marker={this.state.activeMarker}
-                  visible={this.state.showingInfoWindow}
-                  onClose={this.onClose}
-                >
-                  <div className={styles.infoDetails}>
-                    <h4>{this.state.address}</h4>
-                  </div>
-                </InfoWindow>
-              </Map>
-            </div>
-            <button className={styles.parkingButton}>
-              <span>
-                <Link href={{ pathname: "/showLocations" }}>
-                  <a>Show Parking Spots</a>
-                </Link>
-              </span>
-            </button>
+                <div className={styles.infoDetails}>
+                  <h4>{userInfo.address}</h4>
+                </div>
+              </InfoWindow>
+            </Map>
           </div>
-        )}
-      </div>
-    );
-  }
-}
+          <button className={styles.parkingButton}>
+            <span>
+            <Link to={`/showLocations`}>Show Parking Spots</Link>
+            </span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 // export default UserWindow;
 export default GoogleApiWrapper({
-  apiKey: "AIzaSyBUubDA69b60fcLydMGlX67mcSxbZZT1Pg",
-})(UserWindow);
+  apiKey: "AIzaSyCRuuxo5Ay2Prx0W6SlQJ9eOKs9hRHeqm0",
+})(userWindow);
